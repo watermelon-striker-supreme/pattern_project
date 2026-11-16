@@ -1,0 +1,1 @@
+Test Minimum Rule Length >= 3 to remove healing redundancy and amplify mutation spikes.
