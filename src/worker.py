@@ -3,7 +3,7 @@ sys.path.append('src')
 import os
 import json
 import random
-from grammar_engine import read_fasta, compress_sequence, expand_rules, sliding_window_parse
+from grammar_engine_longest import read_fasta, compress_longest_first, expand_rules, parse_sequence
 
 def mutate_sequence(sequence, num_mutations=5):
     seq_list = list(sequence)
@@ -36,6 +36,14 @@ def mutate_sequence(sequence, num_mutations=5):
             
     return "".join(seq_list), mutation_indices
 
+def sliding_window_parse(sequence, expanded_rules, window_size=200):
+    costs = []
+    for i in range(0, len(sequence) - window_size + 1, window_size):
+        chunk = sequence[i:i+window_size]
+        _, cost = parse_sequence(chunk, expanded_rules)
+        costs.append(cost)
+    return costs
+
 if __name__ == "__main__":
     job_id = int(sys.argv[1])
     random.seed(job_id)
@@ -45,11 +53,11 @@ if __name__ == "__main__":
         sys.exit(1)
         
     raw_seq = read_fasta(filepath)
-    rules, _ = compress_sequence(raw_seq, iterations=100)
+    
+    rules, _ = compress_longest_first(raw_seq, iterations=400)
     expanded_rules = expand_rules(rules)
     
     window_size = 200
-    
     healthy_costs = sliding_window_parse(raw_seq, expanded_rules, window_size)
     
     mutated_seq, mut_indices = mutate_sequence(raw_seq, num_mutations=5)
